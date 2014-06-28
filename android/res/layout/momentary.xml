@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@drawable/bg_momentary"
-    android:orientation="vertical" -->
-<!--
-    <com.codefox421.brickster.EmulatorView android:id="@+id/emulatorView"
-	      android:layout_width="wrap_content"
-	      android:layout_height="wrap_content"
-	      android:layout_alignParentLeft="true"
-	      />
--->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -54,7 +42,7 @@
         android:layout_centerInParent="true" >
 
         <View
-            android:id="@+id/spacer_view_momentary"
+            android:id="@+id/spacer_view"
             android:layout_width="20dp"
             android:layout_height="38dp"
             android:layout_centerHorizontal="true" />
@@ -63,7 +51,7 @@
             android:id="@+id/button_red_fwd"
             android:layout_width="58dp"
             android:layout_height="64dp"
-            android:layout_below="@+id/spacer_view_momentary"
+            android:layout_below="@+id/spacer_view"
             android:background="@android:color/transparent"
             android:longClickable="false" />
 
@@ -116,4 +104,3 @@
     </RelativeLayout>
 
 </RelativeLayout>
-<!-- /LinearLayout-->
