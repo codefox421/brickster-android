@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import android.bluetooth.BluetoothAdapter;
@@ -753,6 +754,81 @@ public class BricksTer extends Activity {
 			}
 		});
 	}
+	
+	private void setupSliderGui() {
+		CharSequence oldTitle = (mTitle != null ? mTitle.getText() : "");
+		boolean oldRedFlip = (mConnectedDevicePrefs != null && 
+				mConnectedDevicePrefs.getBoolean(Integer.valueOf(R.id.check_red_flip).toString(), false)) ||
+				(mRedFlip != null && mRedFlip.isChecked());
+		boolean oldBlueFlip = (mConnectedDevicePrefs != null && 
+				mConnectedDevicePrefs.getBoolean(Integer.valueOf(R.id.check_blue_flip).toString(), false)) ||
+				(mBlueFlip != null && mBlueFlip.isChecked());
+		// Set up the window layout
+		mCurrentGui = R.layout.mollmann_slider;
+		setContentView(mCurrentGui);
+		mTitle = (TextView) findViewById(R.id.title_right_text);
+		mTitle.setText(oldTitle);
+		
+		/* Slider buttons */
+		// Red flip
+		mRedFlip = new CheckBox(getApplicationContext());
+		mRedFlip.setChecked(oldRedFlip);
+		// Red slider
+		SeekBar slider = (SeekBar) findViewById(R.id.seekBarA);
+		slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+	        @Override
+	        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+	        	progress = progress - 28;
+//	        	mTitle.setText(Integer.toString(progress));
+	        	byte[] data = new byte[1];
+	        	data[0] = (byte) 0x80; // set mode & output-channel
+	        	if (progress >= 0) {
+	        		data[0] |= (byte) progress;
+	        	} else {
+	        		data[0] |= (byte)(63 + progress);
+	        	}
+//	        	mTitle.setText(Integer.toBinaryString(data[0]).substring(24));
+	        	for (BluetoothSerialService mSerialService : mSerialServices)
+					mSerialService.write(data);
+	        }
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {}
+		});
+		// Blue flip
+		mBlueFlip = new CheckBox(getApplicationContext());
+		mBlueFlip.setChecked(oldBlueFlip);
+		// Blue slider
+		slider = (SeekBar) findViewById(R.id.seekBarB);
+		slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+	        @Override
+	        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+	        	progress = progress - 28;
+//	        	mTitle.setText(Integer.toString(progress));
+	        	byte[] data = new byte[1];
+	        	data[0] = (byte) 0xc0; // set mode & output-channel
+	        	if (progress >= 0) {
+	        		data[0] |= (byte) progress;
+	        	} else {
+	        		data[0] |= (byte)(63 + progress);
+	        	}
+//	        	mTitle.setText(Integer.toBinaryString(data[0]).substring(24));
+	        	for (BluetoothSerialService mSerialService : mSerialServices)
+					mSerialService.write(data);
+	        }
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {}
+		});
+	}
 
 	
 	private void readPrefs() {
@@ -1117,8 +1193,8 @@ public class BricksTer extends Activity {
         case R.id.preferences:
         	doPreferences();
             return true;
-        case R.id.menu_special_keys:
-            doDocumentKeys();
+        case R.id.menu_special_ui:
+            setupSliderGui();
             return true;
         }
         return false;
