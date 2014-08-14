@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -40,6 +41,7 @@ public class BluetoothSerialService {
     // Debugging
     private static final String TAG = "BluetoothReadService";
     private static final boolean D = true;
+    private static final Semaphore mSemaphore = new Semaphore(1, true);
 
 
 	private static final UUID SerialPortServiceClass_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -214,6 +216,14 @@ public class BluetoothSerialService {
             r = mConnectedThread;
         }
         // Perform the write unsynchronized
+//        int k = 0;
+//        String command = "";
+//        do {
+//        	if (k > 0)
+//        		command += " ";
+//        	command += String.format("%8s", Integer.toBinaryString(out[k] & 0xFF)).replace(' ', '0');
+//        } while(++k < out.length);
+//        Log.d(TAG, "Sending: " + command);
         r.write(out);
     }
     
@@ -349,6 +359,17 @@ public class BluetoothSerialService {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
+                    if (bytes > 0) {
+                    	mSemaphore.release();
+//                        int k = 0;
+//                        String command = "";
+//                        do {
+//                        	if (k > 0)
+//                        		command += " ";
+//                        	command += String.format("%8s", Integer.toBinaryString(buffer[k] & 0xFF)).replace(' ', '0');
+//                        } while(++k < bytes);
+//                        Log.d(TAG, "Received: " + command);
+                    }
 
 //                    mEmulatorView.write(buffer, bytes);
                     
@@ -369,8 +390,9 @@ public class BluetoothSerialService {
          * Write to the connected OutStream.
          * @param buffer  The bytes to write
          */
-        public void write(byte[] buffer) {
+        public void write(final byte[] buffer) {
             try {
+            	mSemaphore.acquire();
                 mmOutStream.write(buffer);
 
                 // Share the sent message back to the UI Activity
@@ -378,6 +400,8 @@ public class BluetoothSerialService {
                         .sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
+            } catch (InterruptedException e) {
+            	Log.e(TAG, "Semaphore interrupted", e);
             }
         }
 
